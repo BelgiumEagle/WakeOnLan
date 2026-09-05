@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.belgiumeagle.wolvpn</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <!-- Absoluten Pfad zum Skript nach der Installation eintragen -->
+        <string>/Users/DEIN_BENUTZERNAME/wol-vpn-watcher/wol-vpn-watcher.sh</string>
+    </array>
+
+    <!-- Prueft alle 30 Sekunden, ob eine VPN-Verbindung besteht -->
+    <key>StartInterval</key>
+    <integer>30</integer>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/wol-vpn-watcher.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/wol-vpn-watcher.err</string>
+</dict>
+</plist>
