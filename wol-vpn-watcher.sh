@@ -16,15 +16,15 @@ set -euo pipefail
 # ---------------------------------------------------------------------------
 
 # MAC-Adresse des Desktop-Rechners (Netzwerkkarte, nicht WLAN falls per Kabel)
-MAC_ADDRESS="AA:BB:CC:DD:EE:FF"
+MAC_ADDRESS="2c:f0:5d:d9:e9:b7"
 
 # Ziel-IP fuer das Magic Packet:
 #  - entweder die feste IP des Desktop-Rechners im Heimnetz (Unicast,
 #    funktioniert meist auch ueber eine geroutete VPN-Verbindung)
-#  - oder die Broadcast-Adresse des Heimnetzes, z.B. 192.168.1.255
+#  - oder die Broadcast-Adresse des Heimnetzes, z.B. 192.168.2.255
 #    (funktioniert nur, wenn dein VPN-Endpunkt direkt im Heimnetz haengt,
 #    z.B. VPN-Server auf dem Router)
-TARGET_IP="192.168.1.255"
+TARGET_IP="192.168.2.100"
 WOL_PORT=9
 
 # Wie wird erkannt, dass die VPN-Verbindung steht?
@@ -37,7 +37,7 @@ VPN_SERVICE_NAME=""
 #   eigenes scutil-Profil): Es wird geprueft, ob irgendeine Netzwerk-
 #   schnittstelle eine IP aus dem Heimnetz besitzt. Nur relevant, wenn
 #   VPN_SERVICE_NAME oben leer gelassen wird.
-HOME_SUBNET_PREFIX="192.168.1."
+HOME_SUBNET_PREFIX="192.168.2."
 
 # Datei, in der der zuletzt erkannte Verbindungsstatus gespeichert wird,
 # damit das Magic Packet nur beim Herstellen der Verbindung (nicht bei

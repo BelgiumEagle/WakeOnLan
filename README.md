@@ -21,11 +21,15 @@ im Betriebssystem/Netzwerktreiber aktiviert sein.
 ### 1. Werte in `wol-vpn-watcher.sh` anpassen
 
 ```bash
-MAC_ADDRESS="AA:BB:CC:DD:EE:FF"   # MAC-Adresse des Desktop-Rechners
-TARGET_IP="192.168.1.255"        # Ziel-IP oder Broadcast-Adresse
+MAC_ADDRESS="2c:f0:5d:d9:e9:b7"   # MAC-Adresse des Desktop-Rechners
+TARGET_IP="192.168.2.100"        # Ziel-IP oder Broadcast-Adresse
 VPN_SERVICE_NAME=""              # siehe unten
-HOME_SUBNET_PREFIX="192.168.1."  # siehe unten
+HOME_SUBNET_PREFIX="192.168.2."  # siehe unten
 ```
+
+Diese Werte sind bereits auf den konkreten Desktop-Rechner (MAC
+`2c:f0:5d:d9:e9:b7`, IP `192.168.2.100`) voreingestellt. Nur noch die
+VPN-Erkennung unten passend zu deinem VPN-Setup konfigurieren.
 
 **MAC-Adresse ermitteln:**
 - Windows: `getmac` oder `ipconfig /all`
@@ -34,9 +38,10 @@ HOME_SUBNET_PREFIX="192.168.1."  # siehe unten
 
 **TARGET_IP waehlen:**
 - Feste (unicast) IP des Desktop-Rechners im Heimnetz, z.B.
-  `192.168.1.50` – funktioniert in der Regel auch ueber eine geroutete
+  `192.168.2.100` – funktioniert in der Regel auch ueber eine geroutete
   VPN-Verbindung, sofern der Rechner eine feste IP/DHCP-Reservierung hat.
-- Alternativ die Broadcast-Adresse des Heimnetzes, z.B. `192.168.1.255`
+  (So ist es aktuell voreingestellt.)
+- Alternativ die Broadcast-Adresse des Heimnetzes, z.B. `192.168.2.255`
   – funktioniert nur, wenn dein VPN-Endpunkt direkt im Heimnetz sitzt
   (z.B. VPN-Server auf der Fritzbox/dem Router) und Broadcasts dorthin
   durchlaesst.
