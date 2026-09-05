@@ -19,21 +19,31 @@ einfachste und schnellste Loesung: Tunnelblick kann eigene Skripte
 ausfuehren, sobald die Verbindung inklusive Routen vollstaendig steht –
 das Magic Packet wird dann sofort verschickt, ohne Wartezeit.
 
-Datei: `tunnelblick/route-up.tunnelblick.sh`
+Datei: `tunnelblick/up-suffix.sh`
+
+**Wichtig zum Dateinamen:** Tunnelblicks eigenes "up"-Skript sucht nach
+genau zwei fest einprogrammierten Dateinamen im Konfigurationsordner:
+`up-prefix.sh` (laeuft vor dem Verbindungsaufbau) und `up-suffix.sh`
+(laeuft direkt danach). Jeder andere Dateiname wird komplett ignoriert
+– ohne Fehlermeldung. Deshalb muss die Datei exakt `up-suffix.sh`
+heissen.
 
 ### Installation
 
 1. Tunnelblick-Konfigurationsordner in Finder oeffnen:
    `~/Library/Application Support/Tunnelblick/Configurations/`
+   (bzw. `/Library/Application Support/Tunnelblick/Shared/`, falls die
+   Konfiguration fuer "All Users" installiert wurde).
 2. Rechtsklick auf deine `<DeineKonfiguration>.tblk` → **Show Package
    Contents** (Paketinhalt zeigen).
-3. In den Ordner `Contents/Resources/` wechseln.
-4. `tunnelblick/route-up.tunnelblick.sh` aus diesem Repo dorthin kopieren
-   (Dateiname exakt `route-up.tunnelblick.sh` beibehalten).
+3. In den Ordner `Contents/Resources/` wechseln (dort liegt auch deine
+   `.ovpn`-Datei).
+4. `tunnelblick/up-suffix.sh` aus diesem Repo dorthin kopieren
+   (Dateiname exakt `up-suffix.sh` beibehalten).
 5. Im Terminal ausfuehrbar machen:
 
    ```bash
-   chmod 744 ~/"Library/Application Support/Tunnelblick/Configurations/DeineKonfiguration.tblk/Contents/Resources/route-up.tunnelblick.sh"
+   chmod 744 ~/"Library/Application Support/Tunnelblick/Configurations/DeineKonfiguration.tblk/Contents/Resources/up-suffix.sh"
    ```
 
 6. Tunnelblick beenden und neu starten, damit es die neue Konfiguration
@@ -41,16 +51,13 @@ Datei: `tunnelblick/route-up.tunnelblick.sh`
 7. Verbinden und testen: In Tunnelblick's Verbindungs-Log (VPN Details →
    deine Konfiguration → Log) sollte nach dem Verbindungsaufbau die
    Zeile `wol: Wake-on-LAN Magic Packet an 2c:f0:5d:d9:e9:b7
-   (192.168.2.100:9) gesendet` erscheinen.
-
-Falls Tunnelblick das Skript nicht automatisch ausfuehrt: In den
-Tunnelblick-Einstellungen der Konfiguration unter **Advanced** pruefen,
-ob eine Option zum Zulassen eigener Skripte aktiviert werden muss (je
-nach Tunnelblick-Version unterschiedlich benannt).
+   (192.168.2.100:9) gesendet` erscheinen (im Log-Abschnitt zwischen
+   "Start of output from up-suffix.sh" und "End of output from
+   up-suffix.sh").
 
 Aendert sich MAC-Adresse oder IP des Desktop-Rechners, einfach die drei
-Variablen am Anfang von `tunnelblick/route-up.tunnelblick.sh` anpassen
-und die Datei erneut in den `.tblk`-Ordner kopieren.
+Variablen am Anfang von `tunnelblick/up-suffix.sh` anpassen und die
+Datei erneut in den `.tblk`-Ordner kopieren.
 
 ## Alternative/Fallback: Hintergrund-Polling per launchd
 

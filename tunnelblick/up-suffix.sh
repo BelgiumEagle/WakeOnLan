@@ -1,19 +1,25 @@
 #!/bin/bash
 #
-# route-up.tunnelblick.sh
+# up-suffix.sh
 #
-# Wird von Tunnelblick automatisch ausgefuehrt, sobald die OpenVPN-
-# Verbindung vollstaendig steht (Tunnel + Routen eingerichtet). Schickt
+# Wird von Tunnelblicks eigenem "up"-Skript (client.up.tunnelblick.sh)
+# automatisch ausgefuehrt, wenn eine Datei mit genau diesem Namen
+# ("up-suffix.sh") im selben Ordner wie die OpenVPN-Konfiguration
+# liegt. Der Zeitpunkt ist direkt nach dem Verbindungsaufbau. Schickt
 # in diesem Moment ein Wake-on-LAN "Magic Packet" an den Desktop-Rechner
 # zu Hause.
 #
+# WICHTIG: Der Dateiname muss exakt "up-suffix.sh" lauten - andere
+# Namen (z.B. "route-up.tunnelblick.sh") werden von Tunnelblick nicht
+# erkannt und einfach stillschweigend ignoriert.
+#
 # Installation: Diese Datei unveraendert nach
-#   <DeineKonfiguration>.tblk/Contents/Resources/route-up.tunnelblick.sh
+#   <DeineKonfiguration>.tblk/Contents/Resources/up-suffix.sh
 # kopieren und ausfuehrbar machen. Details siehe README.md.
 #
-# Hinweis: Tunnelblick fuehrt dieses Skript als root mit minimaler
-# Umgebung aus - daher keine Abhaengigkeit von $HOME o.ae. und
-# absoluter Pfad zu "nc".
+# Hinweis: Tunnelblick fuehrt dieses Skript mit minimaler Umgebung aus
+# - daher keine Abhaengigkeit von $HOME o.ae. und absoluter Pfad zu
+# "nc".
 
 set -euo pipefail
 
