@@ -1,100 +1,95 @@
 # WakeOnLan – VPN-getriggertes Wake-on-LAN fuer macOS
 
-Kleines Bash-Programm, das auf deinem Mac erkennt, wenn du per VPN mit
-deinem Heimnetz verbunden bist, und in diesem Moment ein Wake-on-LAN
-"Magic Packet" an deinen Desktop-Rechner schickt – so kannst du ihn aus
-der Ferne aufwecken, ohne manuell etwas ausloesen zu muessen.
+Kleines Programm, das automatisch ein Wake-on-LAN "Magic Packet" an
+deinen Desktop-Rechner zu Hause schickt, sobald du dich per (Open-)VPN
+mit dem Heimnetz verbindest – so kannst du ihn aus der Ferne aufwecken,
+ohne manuell etwas ausloesen zu muessen.
 
 Voraussetzung auf dem Desktop-Rechner: Wake-on-LAN muss in BIOS/UEFI und
 im Betriebssystem/Netzwerktreiber aktiviert sein.
 
-## Dateien
+Aktuell konfiguriert fuer:
+- MAC-Adresse: `2c:f0:5d:d9:e9:b7`
+- IP im Heimnetz: `192.168.2.100`
 
-- `wol-vpn-watcher.sh` – das eigentliche Skript. Prueft den VPN-Status
-  und verschickt das Magic Packet nur beim Herstellen einer neuen
-  Verbindung (nicht bei jedem Durchlauf).
-- `com.belgiumeagle.wolvpn.plist` – optionale `launchd`-Konfiguration,
-  damit das Skript automatisch alle 30 Sekunden im Hintergrund laeuft.
+## Empfohlen: Tunnelblick-Hook (sofortiger Trigger)
 
-## Einrichtung
+Da du dich per **Tunnelblick** mit OpenVPN verbindest, ist das die
+einfachste und schnellste Loesung: Tunnelblick kann eigene Skripte
+ausfuehren, sobald die Verbindung inklusive Routen vollstaendig steht –
+das Magic Packet wird dann sofort verschickt, ohne Wartezeit.
 
-### 1. Werte in `wol-vpn-watcher.sh` anpassen
+Datei: `tunnelblick/route-up.tunnelblick.sh`
 
-```bash
-MAC_ADDRESS="2c:f0:5d:d9:e9:b7"   # MAC-Adresse des Desktop-Rechners
-TARGET_IP="192.168.2.100"        # Ziel-IP oder Broadcast-Adresse
-VPN_SERVICE_NAME=""              # siehe unten
-HOME_SUBNET_PREFIX="192.168.2."  # siehe unten
-```
+### Installation
 
-Diese Werte sind bereits auf den konkreten Desktop-Rechner (MAC
-`2c:f0:5d:d9:e9:b7`, IP `192.168.2.100`) voreingestellt. Nur noch die
-VPN-Erkennung unten passend zu deinem VPN-Setup konfigurieren.
+1. Tunnelblick-Konfigurationsordner in Finder oeffnen:
+   `~/Library/Application Support/Tunnelblick/Configurations/`
+2. Rechtsklick auf deine `<DeineKonfiguration>.tblk` → **Show Package
+   Contents** (Paketinhalt zeigen).
+3. In den Ordner `Contents/Resources/` wechseln.
+4. `tunnelblick/route-up.tunnelblick.sh` aus diesem Repo dorthin kopieren
+   (Dateiname exakt `route-up.tunnelblick.sh` beibehalten).
+5. Im Terminal ausfuehrbar machen:
 
-**MAC-Adresse ermitteln:**
-- Windows: `getmac` oder `ipconfig /all`
-- Linux: `ip link`
-- macOS: `ifconfig en0` (bzw. das jeweilige Interface)
+   ```bash
+   chmod 744 ~/"Library/Application Support/Tunnelblick/Configurations/DeineKonfiguration.tblk/Contents/Resources/route-up.tunnelblick.sh"
+   ```
 
-**TARGET_IP waehlen:**
-- Feste (unicast) IP des Desktop-Rechners im Heimnetz, z.B.
-  `192.168.2.100` – funktioniert in der Regel auch ueber eine geroutete
-  VPN-Verbindung, sofern der Rechner eine feste IP/DHCP-Reservierung hat.
-  (So ist es aktuell voreingestellt.)
-- Alternativ die Broadcast-Adresse des Heimnetzes, z.B. `192.168.2.255`
-  – funktioniert nur, wenn dein VPN-Endpunkt direkt im Heimnetz sitzt
-  (z.B. VPN-Server auf der Fritzbox/dem Router) und Broadcasts dorthin
-  durchlaesst.
+6. Tunnelblick beenden und neu starten, damit es die neue Konfiguration
+   inkl. Skript neu einliest.
+7. Verbinden und testen: In Tunnelblick's Verbindungs-Log (VPN Details →
+   deine Konfiguration → Log) sollte nach dem Verbindungsaufbau die
+   Zeile `wol: Wake-on-LAN Magic Packet an 2c:f0:5d:d9:e9:b7
+   (192.168.2.100:9) gesendet` erscheinen.
 
-**VPN-Erkennung konfigurieren:**
+Falls Tunnelblick das Skript nicht automatisch ausfuehrt: In den
+Tunnelblick-Einstellungen der Konfiguration unter **Advanced** pruefen,
+ob eine Option zum Zulassen eigener Skripte aktiviert werden muss (je
+nach Tunnelblick-Version unterschiedlich benannt).
 
-- **Variante A – macOS-eigenes VPN-Profil** (unter Systemeinstellungen →
-  VPN eingerichtet, z.B. IKEv2/IPSec): Servicenamen ermitteln mit
+Aendert sich MAC-Adresse oder IP des Desktop-Rechners, einfach die drei
+Variablen am Anfang von `tunnelblick/route-up.tunnelblick.sh` anpassen
+und die Datei erneut in den `.tblk`-Ordner kopieren.
 
-  ```bash
-  scutil --nc list
-  ```
+## Alternative/Fallback: Hintergrund-Polling per launchd
 
-  und den Namen in `VPN_SERVICE_NAME` eintragen.
+Zusaetzlich (oder falls der Tunnelblick-Hook aus irgendeinem Grund nicht
+greift) liegt ein client-unabhaengiger Watcher bei, der alle 30 Sekunden
+prueft, ob eine VPN-Verbindung besteht, und beim Verbindungsaufbau
+ebenfalls das Magic Packet schickt. Die Erkennung funktioniert bei einer
+Tunnelblick/OpenVPN-Verbindung, die dir eine IP aus deinem Heimnetz
+(`192.168.2.x`) zuweist, bereits ohne weitere Anpassung.
 
-- **Variante B – Drittanbieter-VPN-App** (WireGuard, Tailscale, OpenVPN
-  Connect u.a., die kein eigenes `scutil`-Profil anlegen):
-  `VPN_SERVICE_NAME=""` leer lassen. Es wird dann geprueft, ob eine
-  Netzwerkschnittstelle eine IP aus `HOME_SUBNET_PREFIX` hat (Adresse an
-  dein tatsaechliches Heimnetz/VPN-Subnetz anpassen).
+- `wol-vpn-watcher.sh` – das Watcher-Skript.
+- `com.belgiumeagle.wolvpn.plist` – optionale `launchd`-Konfiguration.
 
-### 2. Skript ausfuehrbar machen und testen
+### Einrichtung
 
 ```bash
 chmod +x wol-vpn-watcher.sh
-./wol-vpn-watcher.sh
+./wol-vpn-watcher.sh   # einmal manuell testen (mit und ohne VPN)
 ```
 
-Am besten einmal manuell mit bestehender und einmal ohne VPN-Verbindung
-testen (Konsolenausgabe prüfen, ggf. `cat "$HOME/Library/Application
-Support/WolVpnWatcher/state"`).
-
-### 3. Automatisch im Hintergrund laufen lassen (optional)
+Automatisch im Hintergrund laufen lassen:
 
 ```bash
 mkdir -p ~/wol-vpn-watcher
 cp wol-vpn-watcher.sh ~/wol-vpn-watcher/
-# Pfad in der plist an deinen Benutzernamen anpassen:
 sed -i '' "s#/Users/DEIN_BENUTZERNAME/wol-vpn-watcher/wol-vpn-watcher.sh#$HOME/wol-vpn-watcher/wol-vpn-watcher.sh#" com.belgiumeagle.wolvpn.plist
 cp com.belgiumeagle.wolvpn.plist ~/Library/LaunchAgents/
 launchctl load ~/Library/LaunchAgents/com.belgiumeagle.wolvpn.plist
 ```
 
-Danach prueft macOS alle 30 Sekunden im Hintergrund, ob eine VPN-Verbindung
-besteht, und weckt den Desktop-Rechner beim Verbindungsaufbau automatisch.
+Logs liegen unter `/tmp/wol-vpn-watcher.log` bzw. `.err`. Zum
+Deaktivieren: `launchctl unload ~/Library/LaunchAgents/com.belgiumeagle.wolvpn.plist`.
 
-Logs liegen unter `/tmp/wol-vpn-watcher.log` bzw. `.err`.
-
-Zum Deaktivieren:
-
-```bash
-launchctl unload ~/Library/LaunchAgents/com.belgiumeagle.wolvpn.plist
-```
+Falls du statt der IP-Bereichs-Erkennung ein natives macOS-VPN-Profil
+(Systemeinstellungen → VPN, z.B. IKEv2/IPSec) nutzt, kannst du stattdessen
+den Servicenamen aus `scutil --nc list` in `VPN_SERVICE_NAME` eintragen
+– fuer Tunnelblick/OpenVPN ist das nicht noetig, dort bleibt
+`VPN_SERVICE_NAME=""` und die IP-Bereichs-Erkennung (`HOME_SUBNET_PREFIX`)
+greift.
 
 ## Hinweise
 
